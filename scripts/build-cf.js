@@ -48,29 +48,59 @@ try {
     // Linux/Mac 上正常使用
     console.log('\n⚡️ 运行 @cloudflare/next-on-pages...');
     // 设置环境变量防止自动部署
-    // 在 Cloudflare Pages 构建环境中，CI 环境变量会被设置
     const env = {
       ...process.env,
       CF_PAGES: '1',
-      // 确保在 CI 环境中（Cloudflare Pages 会自动设置）
-      // 这可以防止 @cloudflare/next-on-pages 尝试自动部署
       CI: process.env.CI || 'true',
-      // 明确告诉工具这是 Pages 项目，不是 Workers
       CLOUDFLARE_PAGES: '1',
     };
     
-    // 运行 @cloudflare/next-on-pages
-    // 注意：即使它尝试部署，Cloudflare Pages 构建环境会阻止 Workers 命令
-    execSync('npx @cloudflare/next-on-pages', {
-      stdio: 'inherit',
-      cwd: process.cwd(),
-      env,
-    });
+    const outputDir = path.join(process.cwd(), '.vercel', 'output', 'static');
     
-    console.log('\n✅ Cloudflare Pages 构建完成！');
-    console.log('📁 输出目录: .vercel/output/static');
-    console.log('💡 Cloudflare Pages 会自动从该目录部署');
-    console.log('⚠️  如果看到部署错误，可以忽略 - Cloudflare Pages 会自动处理部署');
+    try {
+      // 运行 @cloudflare/next-on-pages
+      // 它可能会尝试自动部署，但我们会捕获错误
+      execSync('npx @cloudflare/next-on-pages', {
+        stdio: 'inherit',
+        cwd: process.cwd(),
+        env,
+      });
+    } catch (error) {
+      // 检查是否是部署相关的错误
+      const errorMessage = error.message || error.toString();
+      const isDeployError = 
+        errorMessage.includes('wrangler deploy') ||
+        errorMessage.includes('Workers-specific command') ||
+        errorMessage.includes('wrangler.jsonc');
+      
+      if (isDeployError) {
+        console.log('\n⚠️  检测到部署相关错误（这是预期的）');
+        console.log('⚠️  @cloudflare/next-on-pages 尝试自动部署，但这是 Pages 项目');
+        console.log('⚠️  正在检查构建输出...\n');
+        
+        // 检查输出目录是否存在
+        if (fs.existsSync(outputDir)) {
+          console.log('✅ 构建输出目录已生成！');
+          console.log('✅ 构建成功，可以忽略部署错误');
+          console.log('💡 Cloudflare Pages 会自动从输出目录部署\n');
+        } else {
+          // 如果输出目录不存在，说明构建真的失败了
+          throw new Error('构建失败：输出目录未生成');
+        }
+      } else {
+        // 如果不是部署错误，说明构建真的失败了
+        throw error;
+      }
+    }
+    
+    // 最终验证输出目录
+    if (fs.existsSync(outputDir)) {
+      console.log('\n✅ Cloudflare Pages 构建完成！');
+      console.log('📁 输出目录: .vercel/output/static');
+      console.log('💡 Cloudflare Pages 会自动从该目录部署');
+    } else {
+      throw new Error('构建失败：输出目录未生成');
+    }
   }
 } catch (error) {
   console.error('\n❌ 构建失败:', error.message);

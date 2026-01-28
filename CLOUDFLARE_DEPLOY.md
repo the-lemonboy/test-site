@@ -58,10 +58,12 @@
      - 自动处理 `@cloudflare/next-on-pages` 适配
      - 从 `.vercel/output/static` 目录自动部署
    
-   **注意**：如果构建日志中出现 "wrangler deploy" 相关错误：
-   - 这是 `@cloudflare/next-on-pages` 尝试自动部署导致的
-   - **可以忽略这个错误**，只要构建完成并生成了 `.vercel/output/static` 目录
+   **重要**：如果构建日志中出现 "wrangler deploy" 相关错误：
+   - 这是 `@cloudflare/next-on-pages` 在构建后尝试自动部署导致的
+   - **构建脚本已修复**：会自动检测并忽略部署错误
+   - 只要 `.vercel/output/static` 目录已生成，构建就成功
    - Cloudflare Pages 会自动从输出目录部署，不需要 `wrangler deploy` 命令
+   - 如果看到 "✅ 构建输出目录已生成！" 消息，说明构建成功
 
 ### 步骤 3: 等待部署完成
 
@@ -166,10 +168,12 @@ A:
 3. **不要**在构建命令中包含 `wrangler deploy` 或任何部署命令
 4. Cloudflare Pages 会自动从输出目录部署，不需要手动部署命令
 5. **重要**：如果 `@cloudflare/next-on-pages` 在构建后尝试自动部署并报错：
-   - 这个错误**通常不会阻止构建完成**
+   - **构建脚本已修复**：会自动检测部署错误并验证构建输出
    - `@cloudflare/next-on-pages` 会先完成适配工作，然后才尝试部署
-   - 只要 `.vercel/output/static` 目录已生成，Cloudflare Pages 就能正常部署
-   - 可以忽略这个部署错误，因为 Cloudflare Pages 会自动处理部署
+   - 构建脚本会检查 `.vercel/output/static` 目录是否存在
+   - 如果目录存在，构建脚本会显示 "✅ 构建输出目录已生成！" 并继续
+   - 如果目录不存在，构建才会真正失败
+   - 这个修复确保了即使有部署错误，只要构建输出存在，构建就会成功
 6. 如果构建完全失败，检查构建日志中 `.vercel/output/static` 目录是否已生成
 
 ### Q: API 路由不工作？
