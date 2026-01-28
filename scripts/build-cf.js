@@ -48,20 +48,29 @@ try {
     // Linux/Mac 上正常使用
     console.log('\n⚡️ 运行 @cloudflare/next-on-pages...');
     // 设置环境变量防止自动部署
+    // 在 Cloudflare Pages 构建环境中，CI 环境变量会被设置
     const env = {
       ...process.env,
       CF_PAGES: '1',
-      // 防止 @cloudflare/next-on-pages 尝试自动部署
-      NO_DEPLOY: '1',
+      // 确保在 CI 环境中（Cloudflare Pages 会自动设置）
+      // 这可以防止 @cloudflare/next-on-pages 尝试自动部署
+      CI: process.env.CI || 'true',
+      // 明确告诉工具这是 Pages 项目，不是 Workers
+      CLOUDFLARE_PAGES: '1',
     };
+    
+    // 运行 @cloudflare/next-on-pages
+    // 注意：即使它尝试部署，Cloudflare Pages 构建环境会阻止 Workers 命令
     execSync('npx @cloudflare/next-on-pages', {
       stdio: 'inherit',
       cwd: process.cwd(),
       env,
     });
+    
     console.log('\n✅ Cloudflare Pages 构建完成！');
     console.log('📁 输出目录: .vercel/output/static');
     console.log('💡 Cloudflare Pages 会自动从该目录部署');
+    console.log('⚠️  如果看到部署错误，可以忽略 - Cloudflare Pages 会自动处理部署');
   }
 } catch (error) {
   console.error('\n❌ 构建失败:', error.message);

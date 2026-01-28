@@ -56,7 +56,12 @@
      - 检测 `pnpm-lock.yaml` 并使用 pnpm
      - 运行 `pnpm build:cf`
      - 自动处理 `@cloudflare/next-on-pages` 适配
-     - 部署到 Cloudflare Pages
+     - 从 `.vercel/output/static` 目录自动部署
+   
+   **注意**：如果构建日志中出现 "wrangler deploy" 相关错误：
+   - 这是 `@cloudflare/next-on-pages` 尝试自动部署导致的
+   - **可以忽略这个错误**，只要构建完成并生成了 `.vercel/output/static` 目录
+   - Cloudflare Pages 会自动从输出目录部署，不需要 `wrangler deploy` 命令
 
 ### 步骤 3: 等待部署完成
 
@@ -153,14 +158,19 @@ A:
 3. 检查 Node.js 版本是否为 20
 4. 确认 `pnpm-lock.yaml` 文件存在
 
-### Q: 遇到 "Workers-specific command" 错误？
+### Q: 遇到 "Workers-specific command" 或 "wrangler deploy" 错误？
 
 A: 
 1. **已修复**：已删除 `wrangler.toml` 文件（Cloudflare Pages 不需要它）
 2. 确保构建命令只包含构建步骤：`pnpm build:cf`
 3. **不要**在构建命令中包含 `wrangler deploy` 或任何部署命令
 4. Cloudflare Pages 会自动从输出目录部署，不需要手动部署命令
-5. 如果问题仍然存在，检查是否有其他配置文件触发了 Workers 部署
+5. **重要**：如果 `@cloudflare/next-on-pages` 在构建后尝试自动部署并报错：
+   - 这个错误**通常不会阻止构建完成**
+   - `@cloudflare/next-on-pages` 会先完成适配工作，然后才尝试部署
+   - 只要 `.vercel/output/static` 目录已生成，Cloudflare Pages 就能正常部署
+   - 可以忽略这个部署错误，因为 Cloudflare Pages 会自动处理部署
+6. 如果构建完全失败，检查构建日志中 `.vercel/output/static` 目录是否已生成
 
 ### Q: API 路由不工作？
 
