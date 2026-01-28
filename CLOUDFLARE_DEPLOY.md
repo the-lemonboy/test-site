@@ -32,6 +32,10 @@
    根目录: /
    Node.js 版本: 20
    ```
+   
+   **重要**：如果遇到 "Workers-specific command" 错误，请确保：
+   - 不要使用 `wrangler deploy`，Cloudflare Pages 会自动处理部署
+   - `wrangler.toml` 文件已简化为 Pages 配置（已修复）
 
 5. **配置环境变量**
    在 **Environment variables** 部分添加：
