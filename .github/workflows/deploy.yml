@@ -1,0 +1,95 @@
+name: Deploy
+
+# 不是自动化部署，手动触发器触发
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "部署环境"
+        required: true
+        default: "test"
+        type: choice
+        options:
+          - test      # 测试环境：禁止搜索引擎抓取
+          - production # 生产环境：允许搜索引擎抓取
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}        # 你的阿里云 ECS IP / 域名
+      SSH_USER: ${{ secrets.SSH_USER }}        # 登录用户名，比如 root / ubuntu
+      APP_DIR: ${{ secrets.APP_DIR }}          # 服务端项目目录，例如 /opt/camthink
+      SSH_PORT: ${{ secrets.SSH_PORT }}        # SSH 端口，默认 22，可选
+      # 可选：仓库分支（如果想固定分支）
+      GIT_BRANCH: ${{ secrets.DEPLOY_BRANCH || 'main' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set environment variables for TEST
+        if: ${{ github.event.inputs.environment == 'test' }}
+        run: |
+          cat << 'EOF' > .deploy-env
+          APP_ENV=test
+          NODE_ENV=production
+
+          # 测试环境：搜索引擎不能抓取
+          ROBOTS_TXT_MODE=disallow       # 你在 robots.ts 中可以按这个写 Disallow: /
+          X_ROBOTS_TAG=noindex           # 响应头 X-Robots-Tag: noindex
+          ENABLE_META_DESCRIPTION=false  # 页面不要 meta description
+          EOF
+
+      - name: Set environment variables for PRODUCTION
+        if: ${{ github.event.inputs.environment == 'production' }}
+        run: |
+          cat << 'EOF' > .deploy-env
+          APP_ENV=production
+          NODE_ENV=production
+
+          # 生产环境：允许搜索引擎抓取
+          ROBOTS_TXT_MODE=allow          # 你在 robots.ts 中可以按这个写 Allow: /
+          X_ROBOTS_TAG=index             # 响应头 X-Robots-Tag: index
+          ENABLE_META_DESCRIPTION=true   # 页面需要 meta description
+          EOF
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy deploy env file to server
+        run: |
+          scp -P "${SSH_PORT:-22}" .deploy-env "${SSH_USER}@${SSH_HOST}:${APP_DIR}/.deploy-env"
+
+      - name: Deploy to server via SSH (Docker Compose 蓝绿部署)
+        run: |
+          ssh -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" << 'EOF'
+            set -e
+
+            cd "$APP_DIR"
+
+            # 拉取最新代码（可按需修改为固定分支或 tag）
+            if [ -n "$GIT_BRANCH" ]; then
+              git fetch --all
+              git checkout "$GIT_BRANCH"
+              git pull origin "$GIT_BRANCH"
+            else
+              git pull
+            fi
+
+            # 加载部署环境变量（影响 robots.txt / X-Robots-Tag / meta description 等）
+            set -a
+            [ -f .deploy-env ] && . ./.deploy-env
+            set +a
+
+            # 执行蓝绿部署脚本（内部会调用 docker-compose）
+            ./scripts/deploy.sh
+          EOF

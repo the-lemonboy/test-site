@@ -1,0 +1,33 @@
+version: '3.8'
+
+# 绿色环境配置 - 新版本环境
+services:
+  app-green:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        - VCS_REF=$(git rev-parse --short HEAD)
+    image: camthink:green
+    container_name: camthink-app-green
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DEPLOY_ENV=green
+    ports:
+      - "3002:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - camthink-network
+
+networks:
+  camthink-network:
+    driver: bridge
+

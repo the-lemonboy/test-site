@@ -2,26 +2,56 @@
   "name": "camthink",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:cf": "node scripts/build-cf.js",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "cf:deploy": "node scripts/cf-deploy.js",
+    "cf:preview": "node scripts/cf-preview.js"
   },
   "dependencies": {
+    "framer-motion": "^11.11.17",
+    "motion": "^12.23.24",
+    "next": "^16.0.5",
+    "postcss": "^8.5.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.3"
+    "swiper": "^12.0.3"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "15.3.3",
-    "@eslint/eslintrc": "^3"
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-next": "^16.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "jsdom": "^25.0.1",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.61.0"
   }
 }

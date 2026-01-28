@@ -1,0 +1,33 @@
+version: '3.8'
+
+# 蓝色环境配置 - 当前生产环境
+services:
+  app-blue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        - VCS_REF=$(git rev-parse --short HEAD)
+    image: camthink:blue
+    container_name: camthink-app-blue
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DEPLOY_ENV=blue
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - camthink-network
+
+networks:
+  camthink-network:
+    driver: bridge
+

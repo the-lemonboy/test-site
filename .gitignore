@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+.nyc_output
 
 # next.js
 /.next/
@@ -31,11 +32,24 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env*.local
 
 # vercel
 .vercel
 
+# cloudflare
+.dev.vars
+.wrangler
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Docker
+.current-env
+nginx/conf.d/default.conf.bak
+
+# IDE
+.vscode
+.idea

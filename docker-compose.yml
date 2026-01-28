@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Nginx 负载均衡器
+  nginx:
+    image: nginx:alpine
+    container_name: camthink-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app-blue
+      - app-green
+    restart: unless-stopped
+    networks:
+      - camthink-network
+
+  # 蓝色环境（当前生产环境）
+  app-blue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: camthink-app-blue
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - camthink-network
+    labels:
+      - "traefik.enable=false"
+
+  # 绿色环境（新版本环境）
+  app-green:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: camthink-app-green
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3002:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - camthink-network
+    labels:
+      - "traefik.enable=false"
+
+networks:
+  camthink-network:
+    driver: bridge
+

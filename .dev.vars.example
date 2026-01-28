@@ -1,0 +1,10 @@
+# Cloudflare Pages 本地开发环境变量示例
+# 复制此文件为 .dev.vars 并填入实际值
+# .dev.vars 文件已添加到 .gitignore，不会被提交
+
+STORE_URL=https://store.camthink.ai
+WOO_CONSUMER_KEY=your_consumer_key_here
+WOO_CONSUMER_SECRET=your_consumer_secret_here
+CF_PAGES=1
+NODE_ENV=development
+
