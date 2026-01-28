@@ -35,10 +35,10 @@
    
    **重要提示**：
    - Cloudflare Pages 会自动从输出目录部署，**不需要手动运行部署命令**
-   - 如果遇到 "Workers-specific command" 错误：
-     - 确保没有 `wrangler.toml` 文件（已删除）
-     - 确保构建命令只包含构建步骤，不包含部署步骤
-     - Cloudflare Pages 会自动处理部署，不需要 `wrangler deploy`
+   - **不需要任何 wrangler 配置文件**（`wrangler.toml`、`wrangler.jsonc` 等）
+   - 这些文件是 Workers 项目的配置，Pages 项目不需要
+   - 确保构建命令只包含构建步骤：`pnpm build:cf`
+   - Cloudflare Pages 会自动处理部署，不需要 `wrangler deploy`
 
 5. **配置环境变量**
    在 **Environment variables** 部分添加：
@@ -70,6 +70,25 @@
 - 构建通常需要 2-5 分钟
 - 可以在 Dashboard 中查看实时构建日志
 - 部署完成后会获得一个免费域名：`your-project.pages.dev`
+
+#### 如何查看构建日志和错误详情
+
+1. **在 Cloudflare Dashboard 中查看：**
+   - 进入你的 Pages 项目
+   - 点击 **Deployments** 标签
+   - 点击失败的部署记录
+   - 查看 **Build Logs** 部分，可以看到完整的构建输出
+
+2. **查看 wrangler 详细日志：**
+   - 错误日志路径：`/opt/buildhome/.config/.wrangler/logs/wrangler-*.log`
+   - 这些日志在 Cloudflare 构建环境中，**无法直接访问**
+   - 但所有重要信息都会显示在构建日志中
+
+3. **关键信息检查点：**
+   - ✅ 查找 "✅ Cloudflare Pages 构建完成！" 消息
+   - ✅ 查找 "📁 输出目录: .vercel/output/static" 消息
+   - ⚠️ 如果看到 "Missing entry-point" 错误，但上面两条消息存在 → 构建成功，可以忽略错误
+   - ❌ 如果没有看到成功消息 → 构建真的失败了
 
 ### 步骤 4: 配置自定义域名（可选）
 

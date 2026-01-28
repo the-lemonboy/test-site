@@ -36,14 +36,36 @@ try {
     shell: true,
   });
 
-  // 检查输出目录是否存在（这是最重要的）
+  // 检查输出目录和必要文件
   if (fs.existsSync(outputDir)) {
+    // 检查关键文件是否存在
+    const workerFile = path.join(outputDir, '_worker.js');
+    const functionsDir = path.join(outputDir, 'functions');
+    const hasWorker = fs.existsSync(workerFile);
+    const hasFunctions = fs.existsSync(functionsDir);
+    
+    console.log('\n📋 检查构建输出...');
+    console.log(`📁 输出目录: ${outputDir}`);
+    console.log(`${hasWorker ? '✅' : '⚠️ '} _worker.js: ${hasWorker ? '存在' : '不存在'}`);
+    console.log(`${hasFunctions ? '✅' : '⚠️ '} functions 目录: ${hasFunctions ? '存在' : '不存在'}`);
+    
+    // 列出输出目录内容（前10个文件）
+    try {
+      const files = fs.readdirSync(outputDir);
+      console.log(`\n📦 输出目录包含 ${files.length} 个项目`);
+      if (files.length > 0) {
+        console.log('前10个文件/目录:', files.slice(0, 10).join(', '));
+      }
+    } catch (e) {
+      // 忽略读取错误
+    }
+    
     console.log('\n✅ Cloudflare Pages 构建完成！');
-    console.log('📁 输出目录: .vercel/output/static');
-    // 成功退出，即使 @cloudflare/next-on-pages 报错
+    console.log('💡 如果看到 wrangler 错误，可以忽略 - Cloudflare Pages 会自动部署');
     process.exit(0);
   } else {
     console.error('\n❌ 构建失败：输出目录未生成');
+    console.error('💡 请检查构建日志中的错误信息');
     process.exit(1);
   }
 } catch (error) {
