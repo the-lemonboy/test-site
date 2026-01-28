@@ -47,12 +47,21 @@ try {
   } else {
     // Linux/Mac 上正常使用
     console.log('\n⚡️ 运行 @cloudflare/next-on-pages...');
+    // 设置环境变量防止自动部署
+    const env = {
+      ...process.env,
+      CF_PAGES: '1',
+      // 防止 @cloudflare/next-on-pages 尝试自动部署
+      NO_DEPLOY: '1',
+    };
     execSync('npx @cloudflare/next-on-pages', {
       stdio: 'inherit',
       cwd: process.cwd(),
+      env,
     });
     console.log('\n✅ Cloudflare Pages 构建完成！');
     console.log('📁 输出目录: .vercel/output/static');
+    console.log('💡 Cloudflare Pages 会自动从该目录部署');
   }
 } catch (error) {
   console.error('\n❌ 构建失败:', error.message);

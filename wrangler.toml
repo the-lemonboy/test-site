@@ -1,4 +1,0 @@
-# Cloudflare Pages 配置
-# 注意：Cloudflare Pages 不需要环境配置，所有配置都在 Dashboard 中完成
-pages_build_output_dir = ".vercel/output/static"
-

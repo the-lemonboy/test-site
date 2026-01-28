@@ -22,20 +22,23 @@
 3. **连接 Git 仓库**
    - 选择你的 Git 提供商（GitHub/GitLab/Bitbucket）
    - 授权 Cloudflare 访问你的仓库
-   - 选择 `camthink-site` 仓库
+   - 选择 `test-site` 仓库（或你的实际仓库名）
 
 4. **配置构建设置**
    ```
-   框架预设: Next.js (Cloudflare)
+   框架预设: Next.js (Cloudflare) 或 不使用框架预设
    构建命令: pnpm build:cf
    构建输出目录: .vercel/output/static
    根目录: /
    Node.js 版本: 20
    ```
    
-   **重要**：如果遇到 "Workers-specific command" 错误，请确保：
-   - 不要使用 `wrangler deploy`，Cloudflare Pages 会自动处理部署
-   - `wrangler.toml` 文件已简化为 Pages 配置（已修复）
+   **重要提示**：
+   - Cloudflare Pages 会自动从输出目录部署，**不需要手动运行部署命令**
+   - 如果遇到 "Workers-specific command" 错误：
+     - 确保没有 `wrangler.toml` 文件（已删除）
+     - 确保构建命令只包含构建步骤，不包含部署步骤
+     - Cloudflare Pages 会自动处理部署，不需要 `wrangler deploy`
 
 5. **配置环境变量**
    在 **Environment variables** 部分添加：
@@ -149,6 +152,15 @@ A:
 2. 确认环境变量配置正确
 3. 检查 Node.js 版本是否为 20
 4. 确认 `pnpm-lock.yaml` 文件存在
+
+### Q: 遇到 "Workers-specific command" 错误？
+
+A: 
+1. **已修复**：已删除 `wrangler.toml` 文件（Cloudflare Pages 不需要它）
+2. 确保构建命令只包含构建步骤：`pnpm build:cf`
+3. **不要**在构建命令中包含 `wrangler deploy` 或任何部署命令
+4. Cloudflare Pages 会自动从输出目录部署，不需要手动部署命令
+5. 如果问题仍然存在，检查是否有其他配置文件触发了 Workers 部署
 
 ### Q: API 路由不工作？
 
